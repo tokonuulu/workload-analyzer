@@ -323,7 +323,8 @@ def sort_trace(workloads, **kwargs):
 		return
 
 	interval_time = float(kwargs.get('interval_time', -1.0))
-
+	if interval_time == 0:
+		return workloads
 	new_workloads = []
 	i = 0
 	start = 0
@@ -335,6 +336,7 @@ def sort_trace(workloads, **kwargs):
 		while( i < len(workloads) and ( abs(start - workloads[i].time) < interval_time  or interval_time < 0) ):
 			tmp.append(workloads[i])
 			i+=1
+
 		tmp.sort(key = lambda x: x.blk_end)
 		tmp.sort(key = lambda x: x.blk_start)
 		for req in tmp:
