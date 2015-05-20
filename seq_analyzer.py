@@ -323,8 +323,7 @@ def sort_trace(workloads, **kwargs):
 		return
 
 	interval_time = float(kwargs.get('interval_time', -1.0))
-	if interval_time == 0:
-		return workloads
+	interval_blkcnt = float(kwargs.get('interval_blkcnt', 0))
 	new_workloads = []
 	i = 0
 	start = 0
@@ -332,11 +331,19 @@ def sort_trace(workloads, **kwargs):
 		tmp = []
 		start = workloads[i].time
 		req = workloads[i]
+		blkcnt = workloads[i].blk_count
 
-		while( i < len(workloads) and ( abs(start - workloads[i].time) < interval_time  or interval_time < 0) ):
+		while True:
 			tmp.append(workloads[i])
+			if i < len(workloads) - 1:
+				blkcnt += workloads[i+1].blk_count
+			curr_time = workloads[i].time
 			i+=1
 
+			if  (i < len(workloads) and (blkcnt <= interval_blkcnt or interval_blkcnt == 0) and ( abs(start - curr_time) < interval_time  or interval_time < 0)) == False :
+				break
+		if len(tmp) != 1:
+			print len(tmp)
 		tmp.sort(key = lambda x: x.blk_end)
 		tmp.sort(key = lambda x: x.blk_start)
 		for req in tmp:
@@ -431,13 +438,14 @@ if len(sys.argv) < 3 :
 	print "   disksim"  
 	print
 	print " Option."  
-	print "   Option_Name    Value_type   Default"  
-	print "   ignore_dev     Boolean      False"  
-	print "   ignore_rw      Boolean      False"  
-	print "   overlap        Boolean      True"  
-	print "   interval_time  Float        -1.0"  
-	print "   load_read      Boolean      True"  
-	print "   load_write     Boolean      True"  
+	print "   Option_Name      Value_type   Default"  
+	print "   ignore_dev       Boolean      False"  
+	print "   ignore_rw        Boolean      False"  
+	print "   overlap          Boolean      True"  
+	print "   interval_time    Float        -1.0"  
+	print "   interval_blkcnt  Integer      0"  
+	print "   load_read        Boolean      True"  
+	print "   load_write       Boolean      True"  
 	print
 	print " Example."  
 	print "   python seq_analyzer.py sample.txt blktrace interval_time = 0.01, ignore_rw = False"  
